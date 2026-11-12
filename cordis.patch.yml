@@ -1,0 +1,118 @@
+# qqbot-suite bundle patch。
+#
+# 一个包、四个子插件 + 一个设置页：
+#   qqbot-suite        套件本体：配置服务、/api/qqbot-suite/* 路由、settings.section
+#   qqbot-suite-gate   群聊闸门（keywords / semantic / all）
+#   qqbot-suite-guard  工作区工具防护
+#   qqbot-suite-self   qqbot_bot_profile 工具
+#
+# 运行期设置存在 <DSH_HOME>/qqbot-suite/profiles/<profile>/settings.json，设置页保存后子插件立即换规则；
+# 这里的 config 只作为首次启动的默认值。
+- insert:
+    - id: qqbot-suite
+      name: 'dsh-qqbot-suite'
+      config:
+        mode: keywords
+        wakeWords: []
+        # 机器人的名字（手动填，不会自动读取）：唤醒匹配、语义判断提示词、
+        # 群聊历史里机器人发言的标记都用它；设置页首页可改。留空 = 只靠 @、引用和唤醒词。
+        botName: ''
+        # 只有这些发送者 ID 发来的行首 / 会原样进入；其他人的消息先被去掉行首的 /。
+        # 空列表 = 不启用。群聊是群成员 openid，私聊是用户 openid。
+        slash:
+          allowIds: []
+        # 群聊图片的处置方式（唯一开关，决定权在套件这边）。三档：
+        #   ignore      —— 不读图：带图片的消息整条不收，agent 完全看不到图（纯文字消息照常处理）；
+        #   placeholder —— 摘图留 [图片×N（已过滤，看不到内容）] 占位符，agent 看不到图但知道来过图；
+        #   agent       —— 模型识别：官方链路下载并在正文写 `Image: <路径>`，agent 用 read_image 自己看。
+        image:
+          mode: placeholder
+          # 历史图片召回（只在 mode = agent 时生效）：被闸门拦下的图也会记进索引，
+          # 之后有人让 agent 看「刚才那张」时按批把本地路径补给正文。
+          #   gapMinutes 相邻两张图间隔超过几分钟算两批（1–60）
+          #   maxImages  单轮最多注入几张（1–20）
+          recall:
+            gapMinutes: 1
+            maxImages: 4
+        debug: false
+        semantic:
+          # 判断模型：provider/model；空 = 跟随「设置 → 模型」的默认模型。
+          model: ''
+          maxHistory: 12
+          timeoutMs: 8000
+          maxChars: 6000
+          # 判定时「隔多久算换了一个话题」（分钟，1–1440）：聊天记录每条都带发送时间，
+          # 间隔超过它就不再套用「紧跟着它说话的短反应算 YES」。
+          staleMinutes: 30
+          reasoningEffort: off
+          maxTokens: 256
+          discardThinking: true
+        timeout:
+          enabled: true
+          ms: 15000
+          message: '⏱ 这条想太久了（超过 {seconds} 秒），先中断。拆小一点再问我一次？'
+        # 回复用哪种 QQ 消息类型发。旧版 PC QQ 不认 markdown（msg_type=2），
+        # 整条只显示「暂不支持该消息类型，请用手机QQ查看」；纯文本（msg_type=0）哪都能看。
+        #   auto      —— 按正文判断：只有代码块 / 表格 / 连续多条列表 / 标题 / 引用才发 markdown
+        #   text      —— 一律纯文本
+        #   markdown  —— 一律 markdown（官方原行为）
+        reply:
+          format: auto
+        # 多条消息合并（同一人连着发几句 → 合成一条再进 agent）。默认关：
+        # 开了以后群里每条消息都会多等一个窗口；@ / 唤醒词 / 引用同样进窗口（合并优先），
+        # 只有行首 `/` 的斜杠命令不受影响。
+        #   enabled   只有 true 才开（设置页的「合并多条消息」开关）
+        #   windowMs  合并窗口，200–600000 毫秒（最长 10 分钟）
+        merge:
+          enabled: false
+          windowMs: 800
+        media:
+          # 最少 1，没有「0 = 不限」。这个数同时是历史图片能召回多少张的上限。
+          maxFiles: 100
+        # 群聊上下文：喂给 agent 的最近 N 条群消息（官方 historyBuffer 回答完就清空，
+        # 套件自己记账，见 AGENTS.md §6.11）。window: 0 = 关掉注入。
+        history:
+          window: 20
+          maxChars: 2000
+          persist: true
+          markAnswered: true
+        # 冷场处理（见 idle.js）：群聊最后一条不是它自己说的、且安静超过 minutes 分钟时，
+        # 让 agent 自己决定要不要说一句；最后那条如果是被语义拦下的，则按原样补回。
+        # 分钟数上限锁死 30（会话 30 分钟回收）。
+        #   enabled       只有 true 才开（设置页的「冷场主动发言」开关）
+        #   dailyLimit    每群每天最多主动说几次
+        #   hoursStart/End 活跃时段，左闭右开；start > end 为跨夜，相等为全天
+        #   recallMissed  补回被语义判成「不回」的那条（方案 A）
+        idle:
+          enabled: false
+          minutes: 10
+          cooldownMinutes: 60
+          dailyLimit: 3
+          hoursStart: 9
+          hoursEnd: 24
+          recallMissed: true
+          catchUpOnStart: true
+        guard:
+          extras: []
+          deny: []
+          # 群聊工具白名单（不在清单里的一律拒绝；空数组 = 群里什么工具都不给）。
+          # 必须和 config.js 的 DEFAULT_GROUP_TOOLS 保持一致，否则「首次启动默认值」
+          # 和「设置页显示的默认值」会不一样。
+          # read_image 不在这里：它跟着 image.mode 走（mode = agent 时自动追加）。
+          allow:
+            - qqbot_bot_profile
+            - web_search
+        # 提示词覆盖：设置页「Prompt 设置」折叠区填的句子；空 = 全用代码里的原文。
+        # 只作首次启动默认值，用户改过之后以插件数据目录里的 settings.json 为准。
+        promptOverrides: {}
+    - id: qqbot-suite-gate
+      name: 'dsh-qqbot-suite/gate'
+    - id: qqbot-suite-guard
+      name: 'dsh-qqbot-suite/guard'
+    # qqbot_bot_profile 工具（agent 查「自己是谁」）：默认停用，启停在插件页面控制。
+    # 停用时插件上下文销毁、工具注册自动注销，零凭据读取；启用后执行时才读凭据
+    # （appId/appSecret）调 QQ 只读接口。设置页「机器人名字」的「自动获取」按钮
+    # 也以它启用与否为准。
+    - id: qqbot-suite-self
+      name: 'dsh-qqbot-suite/self'
+      disabled: true

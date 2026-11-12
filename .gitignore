@@ -1,0 +1,24 @@
+# 依赖与构建产物
+node_modules/
+*.tgz
+npm-debug.log*
+
+# 本机日志（插件的调试日志正常写在 <im-qqbot.cwd>/logs，这里兜底）
+*.log
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 私有内容：即使有人从上级目录误拷进来，也不进库
+backups/
+.workbuddy/
+.workbuddy_tmp/
+*.env
+*.env.*
+
+# 开发文档只在本机维护，不进仓库（发布包的 files 白名单里也一并移除了）
+CHANGELOG.md
+COMPATIBILITY.md

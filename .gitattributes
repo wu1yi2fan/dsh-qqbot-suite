@@ -1,0 +1,4 @@
+# 索引与工作区统一 LF：显式写 eol=lf 才不受本机 core.autocrlf 影响，
+# 否则 Windows 上 checkout 会把工作区改成 CRLF，而索引里存的是 LF，
+# 两边永远对不上（git status 反复出现整文件「被修改」）。
+* text=auto eol=lf

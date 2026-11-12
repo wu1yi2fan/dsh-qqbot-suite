@@ -1,0 +1,87 @@
+{
+  "name": "dsh-qqbot-suite",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "QQ bot suite: group wake-word/semantic gate, workspace tool guard, bot profile tool, and one settings page.",
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.2-rc.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.2.2-rc.1",
+    "@deepseek-ai/dsh-client-ui-primitives": ">=0.2.2-rc.1",
+    "@tencent-connect/dsh-qqbot": ">=0.5.5"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-llm": { "optional": true },
+    "@deepseek-ai/dsh-client-ui-primitives": { "optional": true },
+    "@tencent-connect/dsh-qqbot": { "optional": true }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "qqbot",
+    "qq-bot",
+    "cordis",
+    "tencent-connect"
+  ],
+  "license": "MIT",
+  "author": "wu1yi2fan",
+  "homepage": "https://github.com/wu1yi2fan/dsh-qqbot-suite#readme",
+  "bugs": {
+    "url": "https://github.com/wu1yi2fan/dsh-qqbot-suite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wu1yi2fan/dsh-qqbot-suite.git"
+  },
+  "icon": "./icon.svg",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./gate": "./gate.js",
+    "./guard": "./guard.js",
+    "./self": "./self.js",
+    "./history": "./history.js",
+    "./host": "./host.js",
+    "./idle": "./idle.js",
+    "./images": "./images.js",
+    "./images-recall": "./images-recall.js",
+    "./misses": "./misses.js",
+    "./semlog": "./semlog.js",
+    "./client": "./client.js",
+    "./prompts": "./prompts.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "index.js",
+    "gate.js",
+    "guard.js",
+    "self.js",
+    "host.js",
+    "idle.js",
+    "history.js",
+    "images.js",
+    "images-recall.js",
+    "misses.js",
+    "semlog.js",
+    "./config.js",
+    "prompts.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  }
+}
