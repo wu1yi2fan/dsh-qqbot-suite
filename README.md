@@ -1,6 +1,10 @@
 # DSH QQBot Suite
 
 > 为官方 QQ 机器人插件（`@tencent-connect/dsh-qqbot`）提供增强能力的套件。
+>
+> An add-on bundle for the official QQ bot plugin (`@tencent-connect/dsh-qqbot`): group chat
+> gating, conversation context, image handling, tool restrictions and reply formatting, plus
+> one settings page.
 
 - 前置插件： `@tencent-connect/dsh-qqbot` 
 
@@ -21,7 +25,13 @@
 
 安装 DeepSeek Harness 与官方 QQ 机器人插件（`@tencent-connect/dsh-qqbot`）。
 
-### 从 GitHub 安装：
+### 从 npm 安装（推荐）
+
+```bash
+dsh plugin --profile web add dsh-qqbot-suite
+```
+
+### 从 GitHub 安装
 
 在 DSH 插件页面，点击添加插件，将项目地址 https://github.com/wu1yi2fan/dsh-qqbot-suite 填入，点击安装。
 
@@ -30,6 +40,8 @@
 ```bash
 dsh plugin --profile web add github:wu1yi2fan/dsh-qqbot-suite
 ```
+
+> npm 与国内镜像同步有延迟，刚发布当天装不到时用上面的 GitHub 写法。
 
 安装后重启 dsh，在「设置 → QQ 机器人套件」里配置即可。
 
@@ -49,7 +61,7 @@ dsh plugin --profile web add github:wu1yi2fan/dsh-qqbot-suite
 - **媒体缓存上限**：给官方插件的图片缓存目录添加存储数量上限；
 - **斜杠命令白名单**：控制谁可以使用 `/new` 等命令，其他人的消息先去掉行首的 `/`；
 - **处理超时自动中断**：回复时运行时间过长自动中断，避免坏人让bot干背圆周率之类无限消耗token的事情；
-- **回复消息类型可选**：markdown（`msg_type=2`）在旧版 PC QQ 上只显示「暂不支持该消息类型」，这里可以选「自动 / 一律纯文本 / 一律 markdown」。自动档只在正文含代码块、表格、多条列表等明确结构时才用 markdown，其余发纯文本——判错方向的代价不对称，宁可少排版也别让消息直接看不见；
+- **回复消息类型可选**：markdown（`msg_type=2`）在旧版 PC QQ 上只显示「暂不支持该消息类型」，这里可以选「自动 / 一律纯文本 / 一律 markdown」。自动档只在正文含代码块、表格、多条列表等明确结构时才用 markdown，其余发纯文本——判错方向的代价不对称，宁可少排版也别让消息直接看不见。
 
 ## 运行机制与注意事项
 
@@ -81,6 +93,27 @@ dsh plugin --profile web add github:wu1yi2fan/dsh-qqbot-suite
     * 环境变量 QQBOT_APPID / QQBOT_SECRET
     * cordis.patch.yml 中 im-qqbot 配置段的 appId / appSecret
 
+
+## 权限与数据边界
+
+- **读凭据**：只有 `qqbot-suite-self` 会读机器人凭据。机器人在线时用运行中实例持有的凭据；离线时依次读环境变量 `QQBOT_APPID` / `QQBOT_SECRET`、`cordis.patch.yml` 里 `im-qqbot` 的 `appId` / `appSecret`。凭据只用于向腾讯官方接口查询机器人资料，不写盘、不进日志、不外传。
+- **写文件**：设置与日志只写 `<DSH_HOME>/qqbot-suite/profiles/<profile>/`；媒体缓存上限只清理 `~/.dsh-qqbot/media` 内最旧的文件，不动其它目录。
+- **改配置**：设置页里保存「工作区」时会写官方插件的 `cordis.patch.yml` 的 `im-qqbot.cwd`。
+- **进程内补丁**：闸门与冷场补话会 patch 上游 `@tencent-connect/dsh-qqbot` 的运行时对象，**不修改磁盘上的上游代码**。
+- **联网**：除腾讯官方 QQ 接口和宿主的模型调用（走已配置的模型路由，不额外保存密钥）外不发起外部请求；无遥测、无统计上报。
+
+## 兼容性
+
+| 组件 | 实测版本 |
+|---|---|
+| DeepSeek Harness（dsh） | 0.2.2-rc.1 |
+| @tencent-connect/dsh-qqbot | 0.5.5 |
+| Node.js | 22 |
+
+- 官方 `@tencent-connect/dsh-qqbot` 0.5.5 自身声明的适配范围是 DSH 0.2.0-rc.2；本套件要求 `dsh >= 0.2.2-rc.1`。其它版本组合未测试，遇到问题请先核对版本。
+- `image.mode: agent` 需要 agent 持有 `read_image` 工具（本包不内置；例如通过挂载 `@deepseek-ai/dsh-tool-fs` 提供）。缺工具时的表现：正文里有 `Image: <本地路径>`，但 agent 打不开它。
+- 冷场主动补话（idle）通过扫描上游 `dsh-qqbot` 的会话模块并打补丁来获取会话句柄；上游目录结构变化时该功能会自动停用（日志记 warn），不影响其它功能。
+- `engines.dsh` 是声明性字段，宿主不据此做强制校验；不兼容版本通常能装上、装完才报错。
 
 ## 开发说明
 

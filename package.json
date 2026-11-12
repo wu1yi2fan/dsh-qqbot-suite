@@ -8,9 +8,9 @@
     "dsh": ">=0.2.2-rc.1"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-llm": ">=0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-primitives": ">=0.2.2-rc.1",
-    "@tencent-connect/dsh-qqbot": ">=0.5.5"
+    "@deepseek-ai/dsh-llm": ">=0.2.2-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-client-ui-primitives": ">=0.2.2-rc.1 <0.3.0-0",
+    "@tencent-connect/dsh-qqbot": ">=0.5.5 <0.6.0-0"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-llm": { "optional": true },
