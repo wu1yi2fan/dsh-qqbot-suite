@@ -1,6 +1,6 @@
 {
   "name": "dsh-qqbot-suite",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "QQ bot suite: group wake-word/semantic gate, workspace tool guard, bot profile tool, and one settings page.",
   "engines": {
