@@ -35,7 +35,7 @@
     "type": "git",
     "url": "git+https://github.com/wu1yi2fan/dsh-qqbot-suite.git"
   },
-  "icon": "./icon.svg",
+  "icon": "./assets/icon.svg",
   "main": "./index.js",
   "exports": {
     ".": "./index.js",
@@ -52,7 +52,7 @@
     "./client": "./client.js",
     "./prompts": "./prompts.js",
     "./locale/*.json": "./locale/*.json",
-    "./icon": "./icon.svg",
+    "./icon": "./assets/icon.svg",
     "./package.json": "./package.json"
   },
   "files": [
@@ -74,7 +74,7 @@
     "client.js",
     "cordis.patch.yml",
     "locale/*.json",
-    "icon.svg"
+    "assets/icon.svg"
   ],
   "dsh": {
     "bundle": {
